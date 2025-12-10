@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon226.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TT PRO Анализатор">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a237e">
+    <title>TT PRO Анализатор настольного тенниса</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #d32f2f;
+            --accent: #2196f3;
+            --accent2: #ff5722;
+            --profit: #4caf50;
+            --loss: #f44336;
+            --warning: #ff9800;
+            --bg-main: #0d1b2a;
+            --bg-card: #1b263b;
+            --bg-input: #2c3e50;
+            --text-main: #e0e0e0;
+            --text-secondary: #90a4ae;
+            --border: #37474f;
+            --radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --safe-area-top: env(safe-area-inset-top, 20px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-left: env(safe-area-inset-left, 0px);
+            --safe-area-right: env(safe-area-inset-right, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none;
+            position: fixed;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b3a4b 100%);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding: 0;
+            margin: 0;
+            background-attachment: fixed;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            margin: 0 auto;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #283593 100%);
+            padding: 12px 16px 8px;
+            border-bottom: 2px solid var(--accent);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            padding-top: calc(12px + var(--safe-area-top));
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 100%;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .header-title .subtitle {
+            font-size: 11px;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        .theme-switcher {
+            display: flex;
+            gap: 4px;
+        }
+
+        .theme-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .theme-btn.active {
+            border-color: white;
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: calc(60px + var(--safe-area-top));
+            z-index: 999;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tabs-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 0;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 12px 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab span:first-child {
+            font-size: 16px;
+            display: block;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            background: linear-gradient(to bottom, rgba(33, 150, 243, 0.1), transparent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: calc(16px + var(--safe-area-bottom));
+            width: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+        }
+
+        .content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(33, 150, 243, 0.2);
+            width: 100%;
+        }
+
+        .card-title .icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(33, 150, 243, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Input Sections */
+        .input-section {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            width: 100%;
+            min-width: 0;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+        }
+
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2390a4ae' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 12px;
+            padding-right: 40px;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: left;
+            margin-top: 6px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* Player Cards */
+        .player-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            width: 100%;
+        }
+
+        .player-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+        }
+
+        .player-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .player-name {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name-input {
+            background: transparent;
+            border: none;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+            padding: 0;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .player-name-input:focus {
+            outline: none;
+            border-bottom: 1px solid var(--accent);
+        }
+
+        .form-indicator {
+            display: flex;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .form-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .form-win {
+            background: var(--profit);
+        }
+
+        .form-loss {
+            background: var(--loss);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            white-space: nowrap;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Banner */
+        .banner {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0.05) 100%);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin: 20px 0;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .banner-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .banner-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin: 24px 0;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(40, 40);
+                opacity: 0;
+            }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #ff7043 100%);
+            color: white;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, var(--bg-input) 0%, rgba(52, 152, 219, 0.1) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            width: 100%;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'SF Mono', 'Courier New', monospace;
+            letter-spacing: -0.5px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 5px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-player1 {
+            background: linear-gradient(90deg, #2196f3, #64b5f6);
+        }
+
+        .progress-player2 {
+            background: linear-gradient(90deg, #ff5722, #ff8a65);
+        }
+
+        /* Bet Recommendation */
+        .bet-recommendation {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.05) 100%);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            animation: pulse 2s infinite;
+            width: 100%;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .bet-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .bet-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--profit);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .bet-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--profit);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bet-confidence {
+            background: var(--profit);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .bet-details {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .bet-detail {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .bet-detail .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+
+        .bet-detail .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Recommendations Grid */
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 24px;
+            width: 100%;
+        }
+
+        .recommendation-card {
+            background: var(--bg-input);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .rec-type {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 12px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .rec-type.winner {
+            background: var(--accent);
+        }
+
+        .rec-type.total {
+            background: var(--accent2);
+        }
+
+        .rec-confidence {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .rec-main {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .rec-odds {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--profit);
+            margin-bottom: 12px;
+        }
+
+        .rec-reason {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* History */
+        .history-list {
+            max-height: 50vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        .history-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-item {
+            background: var(--bg-input);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .history-item.win {
+            border-color: var(--profit);
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, var(--bg-input) 100%);
+        }
+
+        .history-item.loss {
+            border-color: var(--loss);
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, var(--bg-input) 100%);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .history-players {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .history-status {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .status-win {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--profit);
+        }
+
+        .status-loss {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--loss);
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-card-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-card-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Timer */
+        .timer-container {
+            background: linear-gradient(135deg, rgba(255, 87, 34, 0.1) 0%, rgba(255, 87, 34, 0.05) 100%);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 87, 34, 0.3);
+            text-align: center;
+            width: 100%;
+        }
+
+        .timer-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent2);
+            margin-bottom: 12px;
+        }
+
+        .timer-display {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'SF Mono', 'Courier New', monospace;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .timer-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Instructions */
+        .instruction-section {
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, transparent 100%);
+            border-radius: 16px;
+            border-left: 4px solid var(--accent);
+            width: 100%;
+        }
+
+        .instruction-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-content {
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .instruction-step {
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 2px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Notes */
+        .warning-note {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, transparent 100%);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .success-note {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px 16px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+            background: var(--bg-card);
+            width: 100%;
+            padding-bottom: calc(20px + var(--safe-area-bottom));
+        }
+
+        /* Utility Classes */
+        .mb-8 { margin-bottom: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-16 { margin-bottom: 16px; }
+        .mb-20 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
+        .text-small { font-size: 14px; }
+        .text-xs { font-size: 12px; }
+        .font-bold { font-weight: 700; }
+        .text-profit { color: var(--profit); }
+        .text-loss { color: var(--loss); }
+        .text-accent { color: var(--accent); }
+        .text-accent2 { color: var(--accent2); }
+        .full-width { width: 100%; }
+        .no-wrap { white-space: nowrap; }
+
+        /* iPhone Optimizations */
+        @supports (-webkit-touch-callout: none) {
+            .container {
+                min-height: -webkit-fill-available;
+            }
+            
+            body {
+                min-height: -webkit-fill-available;
+            }
+            
+            .btn {
+                cursor: pointer;
+            }
+            
+            input, textarea {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Media Queries for Larger Screens */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+                margin: 0 auto;
+                box-shadow: 0 0 40px rgba(0,0,0,0.3);
+                min-height: 100vh;
+            }
+            
+            body {
+                background: #000;
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .input-grid,
+            .input-row,
+            .results-grid,
+            .player-cards,
+            .button-group {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .recommendations-grid,
+            .bet-details,
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tabs {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Landscape Mode */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header {
+                padding: 8px 16px;
+                padding-top: calc(8px + var(--safe-area-top));
+            }
+            
+            .header-title h1 {
+                font-size: 16px;
+            }
+            
+            .header-title .subtitle {
+                font-size: 10px;
+            }
+            
+            .tabs-container {
+                top: calc(50px + var(--safe-area-top));
+            }
+            
+            .tab {
+                padding: 8px 4px;
+                font-size: 10px;
+            }
+            
+            .tab span:first-child {
+                font-size: 14px;
+            }
+            
+            .content {
+                padding: 12px;
+                padding-bottom: calc(12px + var(--safe-area-bottom));
+            }
+            
+            .card {
+                padding: 16px;
+                margin-bottom: 12px;
+            }
+            
+            .player-cards {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr 1fr;
+                margin: 16px 0;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* iPhone X/XS/11 Pro/12 Mini/13 Mini */
+        @media (max-width: 375px) {
+            .header-title h1 {
+                font-size: 17px;
+                max-width: 180px;
+            }
+            
+            .header-title .subtitle {
+                font-size: 10px;
+                max-width: 180px;
+            }
+            
+            .card-title {
+                font-size: 16px;
+            }
+            
+            .result-value {
+                font-size: 22px;
+            }
+            
+            .timer-display {
+                font-size: 28px;
+            }
+        }
+
+        /* iPhone SE/5/5S */
+        @media (max-width: 320px) {
+            .header-title h1 {
+                font-size: 16px;
+                max-width: 150px;
+            }
+            
+            .header-title .subtitle {
+                font-size: 9px;
+                max-width: 150px;
+            }
+            
+            .theme-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .tab {
+                font-size: 10px;
+                padding: 10px 2px;
+            }
+            
+            .tab span:first-child {
+                font-size: 14px;
+            }
+            
+            .content {
+                padding: 12px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .card-title {
+                font-size: 15px;
+            }
+            
+            .input-group input,
+            .input-group select,
+            .input-group textarea {
+                padding: 12px;
+                font-size: 15px;
+            }
+            
+            .btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+            
+            .result-value {
+                font-size: 20px;
+            }
+            
+            .timer-display {
+                font-size: 24px;
+            }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .content {
+                padding-bottom: calc(16px + var(--safe-area-bottom) + 80px);
+            }
+            
+            .footer {
+                padding-bottom: calc(20px + var(--safe-area-bottom) + 20px);
+            }
+        }
+
+        /* Prevent text selection on buttons */
+        .btn, .tab, .theme-btn {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Smooth scrolling for the whole app */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Fix for iOS input styling */
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: 12px;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>TT PRO Анализатор</h1>
+                    <div class="subtitle">Профессиональный анализ настольного тенниса</div>
+                </div>
+                <div class="theme-switcher">
+                    <button class="theme-btn active" data-theme="default" title="Стандартная" aria-label="Стандартная тема">🏓</button>
+                    <button class="theme-btn" data-theme="dark" title="Темная" aria-label="Темная тема">🌙</button>
+                    <button class="theme-btn" data-theme="orange" title="Оранжевая" aria-label="Оранжевая тема">🔶</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="players" aria-label="Информация об игроках">
+                    <span>👤</span> Игроки
+                </button>
+                <button class="tab" data-tab="match" aria-label="Параметры матча">
+                    <span>⚔️</span> Матч
+                </button>
+                <button class="tab" data-tab="analysis" aria-label="Анализ матча">
+                    <span>📊</span> Анализ
+                </button>
+                <button class="tab" data-tab="bets" aria-label="Рекомендации ставок">
+                    <span>🎯</span> Ставки
+                </button>
+                <button class="tab" data-tab="history" aria-label="История ставок">
+                    <span>📈</span> История
+                </button>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Players Tab -->
+            <div id="players" class="tab-content active">
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">👤</div>
+                        Информация об игроках
+                    </div>
+                    
+                    <div class="player-cards">
+                        <!-- Игрок 1 -->
+                        <div class="player-card">
+                            <div class="player-header">
+                                <div class="player-icon">1</div>
+                                <div class="player-name">
+                                    <input type="text" id="player1_name" placeholder="Имя игрока 1" value="Ма Лонг" class="player-name-input" aria-label="Имя игрока 1">
+                                </div>
+                                <div class="form-indicator">
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                    <div class="form-dot form-loss" title="Поражение" aria-label="Поражение"></div>
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="player1_rating">🏆 Рейтинг</label>
+                                    <input type="text" id="player1_rating" value="2850" placeholder="2800" inputmode="decimal" aria-label="Рейтинг игрока 1">
+                                    <div class="input-hint">Рейтинг ITTF или Elo</div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="player1_form">📊 Форма (W/L)</label>
+                                    <input type="text" id="player1_form" value="4-1" placeholder="3-2" aria-label="Форма игрока 1">
+                                    <div class="input-hint">Последние 5 матчей</div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="player1_winrate">🎯 Победы %</label>
+                                    <input type="text" id="player1_winrate" value="78" placeholder="75" inputmode="decimal" aria-label="Процент побед игрока 1">
+                                    <div class="input-hint">Процент побед в сезоне</div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="player1_speed">⚡ Скорость игры</label>
+                                    <select id="player1_speed" aria-label="Скорость игры игрока 1">
+                                        <option value="fast">Быстрая</option>
+                                        <option value="medium" selected>Средняя</option>
+                                        <option value="slow">Медленная</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group mt-16">
+                                <label for="player1_strengths">💪 Сильные стороны</label>
+                                <textarea id="player1_strengths" rows="2" placeholder="Крученые подачи, атака слева, стабильность" aria-label="Сильные стороны игрока 1">Крученые подачи, атака слева, стабильность в защите</textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Игрок 2 -->
+                        <div class="player-card">
+                            <div class="player-header">
+                                <div class="player-icon">2</div>
+                                <div class="player-name">
+                                    <input type="text" id="player2_name" placeholder="Имя игрока 2" value="Фань Чжэньдун" class="player-name-input" aria-label="Имя игрока 2">
+                                </div>
+                                <div class="form-indicator">
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                    <div class="form-dot form-loss" title="Поражение" aria-label="Поражение"></div>
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                    <div class="form-dot form-loss" title="Поражение" aria-label="Поражение"></div>
+                                    <div class="form-dot form-win" title="Победа" aria-label="Победа"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="player2_rating">🏆 Рейтинг</label>
+                                    <input type="text" id="player2_rating" value="2820" placeholder="2800" inputmode="decimal" aria-label="Рейтинг игрока 2">
+                                    <div class="input-hint">Рейтинг ITTF или Elo</div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="player2_form">📊 Форма (W/L)</label>
+                                    <input type="text" id="player2_form" value="3-2" placeholder="3-2" aria-label="Форма игрока 2">
+                                    <div class="input-hint">Последние 5 матчей</div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label for="player2_winrate">🎯 Победы %</label>
+                                    <input type="text" id="player2_winrate" value="72" placeholder="75" inputmode="decimal" aria-label="Процент побед игрока 2">
+                                    <div class="input-hint">Процент побед в сезоне</div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="player2_speed">⚡ Скорость игры</label>
+                                    <select id="player2_speed" aria-label="Скорость игры игрока 2">
+                                        <option value="fast" selected>Быстрая</option>
+                                        <option value="medium">Средняя</option>
+                                        <option value="slow">Медленная</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group mt-16">
+                                <label for="player2_strengths">💪 Сильные стороны</label>
+                                <textarea id="player2_strengths" rows="2" placeholder="Агрессивная игра, подачи, завершение атаки" aria-label="Сильные стороны игрока 2">Агрессивная игра, сильные подачи, быстрое завершение атак</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="banner">
+                        <div class="banner-title">📋 Важно: точность данных</div>
+                        <div class="banner-text">
+                            Для точного анализа введите актуальные данные игроков. Рейтинг ITTF и форма последних матчей — ключевые факторы для расчета.
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="save_players" aria-label="Сохранить данные игроков">
+                            <span>💾</span> СОХРАНИТЬ ДАННЫЕ
+                        </button>
+                        <button class="btn btn-secondary" id="next_to_match" aria-label="Перейти к параметрам матча">
+                            <span>➡️</span> ДАЛЕЕ К МАТЧУ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Match Tab -->
+            <div id="match" class="tab-content">
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">⚔️</div>
+                        Параметры матча
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="tournament">🏆 Турнир</label>
+                            <select id="tournament" aria-label="Турнир">
+                                <option value="liga_pro">Лига Про (Китай)</option>
+                                <option value="ittf_wtt">WTT Чемпионс</option>
+                                <option value="world_cup">Кубок мира</option>
+                                <option value="olympics">Олимпийские игры</option>
+                                <option value="other">Другой</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="match_importance">🎯 Важность матча</label>
+                            <select id="match_importance" aria-label="Важность матча">
+                                <option value="high">Высокая (финал)</option>
+                                <option value="medium" selected>Средняя (группа)</option>
+                                <option value="low">Низкая (товарищеская)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="set_format">📏 Формат сетов</label>
+                            <select id="set_format" aria-label="Формат сетов">
+                                <option value="bo5">До 3 побед (БО5)</option>
+                                <option value="bo7" selected>До 4 побед (БО7)</option>
+                                <option value="bo9">До 5 побед (БО9)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="timeouts">⏱️ Тайм-ауты</label>
+                            <select id="timeouts" aria-label="Количество тайм-аутов">
+                                <option value="1" selected>1 тайм-аут</option>
+                                <option value="2">2 тайм-аута</option>
+                                <option value="0">Без тайм-аутов</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="h2h">🤝 Личные встречи</label>
+                            <input type="text" id="h2h" value="8-5" placeholder="8-5" aria-label="Статистика личных встреч">
+                            <div class="input-hint">Статистика личных встреч (Игрок1-Игрок2)</div>
+                        </div>
+                        <div class="input-group">
+                            <label for="surface">📍 Покрытие</label>
+                            <select id="surface" aria-label="Тип покрытия стола">
+                                <option value="wood" selected>Деревянный стол</option>
+                                <option value="synthetic">Синтетическое</option>
+                                <option value="concrete">Бетонное</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-container">
+                        <div class="timer-title">⏰ Таймер до матча</div>
+                        <div class="timer-display" id="match_timer" aria-live="polite">00:00:00</div>
+                        <div class="timer-hint">Установите время до начала матча для оптимального времени ставки</div>
+                        <div class="input-row mt-16">
+                            <div class="input-group">
+                                <input type="number" id="hours" placeholder="Часы" value="2" min="0" max="24" aria-label="Часы до матча">
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="minutes" placeholder="Минуты" value="30" min="0" max="59" aria-label="Минуты до матча">
+                            </div>
+                        </div>
+                        <button class="btn btn-warning mt-16" id="start_timer" aria-label="Запустить таймер">
+                            <span>⏱️</span> ЗАПУСТИТЬ ТАЙМЕР
+                        </button>
+                    </div>
+                    
+                    <div class="banner mt-20">
+                        <div class="banner-title">📈 Ключевые коэффициенты</div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="odds_p1">📊 П1 коэффициент</label>
+                                <input type="text" id="odds_p1" value="1.85" placeholder="1.85" inputmode="decimal" aria-label="Коэффициент на игрока 1">
+                            </div>
+                            <div class="input-group">
+                                <label for="odds_p2">📊 П2 коэффициент</label>
+                                <input type="text" id="odds_p2" value="2.05" placeholder="2.05" inputmode="decimal" aria-label="Коэффициент на игрока 2">
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="odds_total_sets_over">🎯 Тотал сетов > 3.5</label>
+                                <input type="text" id="odds_total_sets_over" value="1.95" placeholder="1.95" inputmode="decimal" aria-label="Коэффициент на тотал сетов больше 3.5">
+                            </div>
+                            <div class="input-group">
+                                <label for="odds_total_sets_under">🎯 Тотал сетов < 3.5</label>
+                                <input type="text" id="odds_total_sets_under" value="1.85" placeholder="1.85" inputmode="decimal" aria-label="Коэффициент на тотал сетов меньше 3.5">
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="odds_total_games_over">🎯 Тотал игр > 40.5</label>
+                                <input type="text" id="odds_total_games_over" value="1.90" placeholder="1.90" inputmode="decimal" aria-label="Коэффициент на тотал игр больше 40.5">
+                            </div>
+                            <div class="input-group">
+                                <label for="odds_total_games_under">🎯 Тотал игр < 40.5</label>
+                                <input type="text" id="odds_total_games_under" value="1.90" placeholder="1.90" inputmode="decimal" aria-label="Коэффициент на тотал игр меньше 40.5">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="back_to_players" aria-label="Вернуться к информации об игроках">
+                            <span>⬅️</span> НАЗАД К ИГРОКАМ
+                        </button>
+                        <button class="btn btn-primary" id="analyze_match" aria-label="Проанализировать матч">
+                            <span>🧮</span> ПРОАНАЛИЗИРОВАТЬ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analysis Tab -->
+            <div id="analysis" class="tab-content">
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">📊</div>
+                        Математический анализ матча
+                    </div>
+                    
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <div class="result-label">Вероятность победы П1</div>
+                            <div class="result-value" id="prob_p1" aria-live="polite">58%</div>
+                            <div class="progress-container">
+                                <div class="progress-bar progress-player1" id="progress_p1" style="width: 58%;" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Вероятность победы П2</div>
+                            <div class="result-value" id="prob_p2" aria-live="polite">42%</div>
+                            <div class="progress-container">
+                                <div class="progress-bar progress-player2" id="progress_p2" style="width: 42%;" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="expected_sets">4.2</div>
+                            <div class="stat-card-label">Ожидаемые сетов</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="expected_games">42.5</div>
+                            <div class="stat-card-label">Ожидаемые игр</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="match_duration">48</div>
+                            <div class="stat-card-label">Минут матча</div>
+                        </div>
+                    </div>
+                    
+                    <div class="banner">
+                        <div class="banner-title">📈 Детальный анализ</div>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Преимущество по рейтингу</div>
+                                <div class="result-value text-profit" id="rating_edge">+1.2%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Преимущество по форме</div>
+                                <div class="result-value text-profit" id="form_edge">+2.8%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Личные встречи</div>
+                                <div class="result-value text-profit" id="h2h_edge">+5.6%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Психологический фактор</div>
+                                <div class="result-value text-loss" id="psycho_edge">-1.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-section">
+                        <div class="instruction-title">
+                            <span>🎯</span> Ключевые инсайты анализа
+                        </div>
+                        <div class="instruction-content">
+                            <div class="instruction-step">
+                                <span class="step-number">1</span>
+                                <strong>Преимущество в личных встречах:</strong> Игрок 1 выиграл 8 из 13 встреч (61.5%), что дает значительное психологическое преимущество.
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">2</span>
+                                <strong>Текущая форма:</strong> Игрок 1 показывает более стабильные результаты в последних матчах (4-1 против 3-2).
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">3</span>
+                                <strong>Стиль игры:</strong> Разница в скорости игры (медленный против быстрого) может привести к большому количеству длинных розыгрышей.
+                            </div>
+                            <div class="instruction-step">
+                                <span class="step-number">4</span>
+                                <strong>Рекомендация:</strong> Матч ожидается упорным с вероятностью 68% сыграть больше 3.5 сетов.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="back_to_match" aria-label="Вернуться к параметрам матча">
+                            <span>⬅️</span> НАЗАД К МАТЧУ
+                        </button>
+                        <button class="btn btn-primary" id="show_bets" aria-label="Показать рекомендации по ставкам">
+                            <span>🎯</span> ПОКАЗАТЬ СТАВКИ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bets Tab -->
+            <div id="bets" class="tab-content">
+                <div class="bet-recommendation">
+                    <div class="bet-header">
+                        <div class="bet-icon">🏆</div>
+                        <div class="bet-title">ГЛАВНАЯ РЕКОМЕНДАЦИЯ</div>
+                        <div class="bet-confidence">87%</div>
+                    </div>
+                    
+                    <div class="bet-details">
+                        <div class="bet-detail">
+                            <div class="label">Тип ставки</div>
+                            <div class="value" id="main_bet_type">Победитель</div>
+                        </div>
+                        <div class="bet-detail">
+                            <div class="label">Выбор</div>
+                            <div class="value" id="main_bet_selection">Ма Лонг (П1)</div>
+                        </div>
+                        <div class="bet-detail">
+                            <div class="label">Коэффициент</div>
+                            <div class="value" id="main_bet_odds">1.85</div>
+                        </div>
+                        <div class="bet-detail">
+                            <div class="label">Преимущество</div>
+                            <div class="value" id="main_bet_edge" style="color: var(--profit);">+6.2%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-small text-center mt-16">
+                        <strong>Обоснование:</strong> Математическая модель показывает 58% вероятность против букмекерских 52%, создавая value 6.2%. Личные встречи 8-5 в пользу.
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">🎯</div>
+                        Альтернативные ставки
+                    </div>
+                    
+                    <div class="recommendations-grid">
+                        <div class="recommendation-card">
+                            <div class="rec-header">
+                                <div class="rec-type total">Тотал</div>
+                                <div class="rec-confidence">82%</div>
+                            </div>
+                            <div class="rec-main">Сетов > 3.5</div>
+                            <div class="rec-odds">1.95</div>
+                            <div class="rec-reason">Высокая конкуренция, равные силы, длинный матч</div>
+                        </div>
+                        
+                        <div class="recommendation-card">
+                            <div class="rec-header">
+                                <div class="rec-type total">Тотал</div>
+                                <div class="rec-confidence">78%</div>
+                            </div>
+                            <div class="rec-main">Игр > 40.5</div>
+                            <div class="rec-odds">1.90</div>
+                            <div class="rec-reason">Разные стили игры, много длинных розыгрышей</div>
+                        </div>
+                        
+                        <div class="recommendation-card">
+                            <div class="rec-header">
+                                <div class="rec-type winner">Победитель</div>
+                                <div class="rec-confidence">71%</div>
+                            </div>
+                            <div class="rec-main">П1 в 3-х сетах</div>
+                            <div class="rec-odds">3.40</div>
+                            <div class="rec-reason">При доминировании может завершить быстро</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-container mt-20">
+                        <div class="timer-title">⏰ Оптимальное время для ставки</div>
+                        <div class="timer-display" id="best_bet_timer">10-15 мин</div>
+                        <div class="timer-hint">Делайте ставку после оценки первых 2-3 игр первого сета</div>
+                    </div>
+                    
+                    <div class="button-group mt-20">
+                        <button class="btn btn-secondary" id="back_to_analysis" aria-label="Вернуться к анализу">
+                            <span>⬅️</span> НАЗАД К АНАЛИЗУ
+                        </button>
+                        <button class="btn btn-primary" id="save_recommendation" aria-label="Сохранить рекомендацию">
+                            <span>💾</span> СОХРАНИТЬ РЕКОМЕНДАЦИЮ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">📈</div>
+                        Статистика прибыли
+                    </div>
+                    
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="total_bets">0</div>
+                            <div class="stat-card-label">Всего ставок</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="win_rate">0%</div>
+                            <div class="stat-card-label">Процент побед</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="total_profit">0 ₽</div>
+                            <div class="stat-card-label">Прибыль</div>
+                        </div>
+                    </div>
+                    
+                    <div class="banner">
+                        <div class="banner-title">📊 Распределение ставок</div>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Ставки на победителя</div>
+                                <div class="result-value" id="bets_winner">0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Ставки на тотал сетов</div>
+                                <div class="result-value" id="bets_total_sets">0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Ставки на тотал игр</div>
+                                <div class="result-value" id="bets_total_games">0</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Средний коэффициент</div>
+                                <div class="result-value" id="avg_odds">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <div class="icon">📋</div>
+                        История ставок
+                    </div>
+                    
+                    <div id="empty_history" style="text-align: center; padding: 40px 16px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 12px;">🏓</div>
+                        <div style="font-size: 17px; margin-bottom: 8px; color: var(--text-main); font-weight: 600;">История ставок пуста</div>
+                        <div style="font-size: 14px;">Сохраняйте рекомендации и отслеживайте результаты</div>
+                    </div>
+                    
+                    <div class="history-list" id="history_list">
+                        <!-- История будет здесь -->
+                    </div>
+                    
+                    <div class="button-group mt-20">
+                        <button class="btn btn-secondary" id="clear_history" aria-label="Очистить историю ставок">
+                            <span>🗑️</span> ОЧИСТИТЬ ИСТОРИЮ
+                        </button>
+                        <button class="btn btn-primary" id="back_to_bets_from_history" aria-label="Перейти к рекомендациям по ставкам">
+                            <span>🎯</span> К СТАВКАМ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div>TT PRO Анализатор настольного тенниса</div>
+            <div class="text-xs mt-8">Профессиональная система математического анализа для Лига Про и WTT турниров</div>
+            <div class="text-xs mt-8">Создана на основе анализа 3000+ матчей настольного тенниса</div>
+            <div class="text-xs mt-8">Защищено авторскими правами. ©2025 г. Разработано специалистами по теннису</div>
+            <div class="text-xs mt-8">Ставки делайте ответственно. 18+ Рискуйте только тем, что готовы потерять</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы управления
+            const tabs = document.querySelectorAll('.tab');
+            const themeBtns = document.querySelectorAll('.theme-btn');
+            
+            // Кнопки навигации
+            const savePlayersBtn = document.getElementById('save_players');
+            const nextToMatchBtn = document.getElementById('next_to_match');
+            const backToPlayersBtn = document.getElementById('back_to_players');
+            const analyzeMatchBtn = document.getElementById('analyze_match');
+            const backToMatchBtn = document.getElementById('back_to_match');
+            const showBetsBtn = document.getElementById('show_bets');
+            const backToAnalysisBtn = document.getElementById('back_to_analysis');
+            const saveRecommendationBtn = document.getElementById('save_recommendation');
+            const clearHistoryBtn = document.getElementById('clear_history');
+            const backToBetsFromHistoryBtn = document.getElementById('back_to_bets_from_history');
+            const startTimerBtn = document.getElementById('start_timer');
+            
+            // Хранилище данных
+            let betHistory = JSON.parse(localStorage.getItem('tt_pro_bets')) || [];
+            let currentTheme = localStorage.getItem('tt_pro_theme') || 'default';
+            let bankroll = parseFloat(localStorage.getItem('tt_pro_bankroll')) || 100000;
+            let matchTimer = null;
+            let timerInterval = null;
+            
+            // Ключи для сохранения данных
+            const DATA_KEYS = {
+                PLAYER1_NAME: 'tt_pro_player1_name',
+                PLAYER1_RATING: 'tt_pro_player1_rating',
+                PLAYER1_FORM: 'tt_pro_player1_form',
+                PLAYER1_WINRATE: 'tt_pro_player1_winrate',
+                PLAYER1_SPEED: 'tt_pro_player1_speed',
+                PLAYER1_STRENGTHS: 'tt_pro_player1_strengths',
+                
+                PLAYER2_NAME: 'tt_pro_player2_name',
+                PLAYER2_RATING: 'tt_pro_player2_rating',
+                PLAYER2_FORM: 'tt_pro_player2_form',
+                PLAYER2_WINRATE: 'tt_pro_player2_winrate',
+                PLAYER2_SPEED: 'tt_pro_player2_speed',
+                PLAYER2_STRENGTHS: 'tt_pro_player2_strengths',
+                
+                TOURNAMENT: 'tt_pro_tournament',
+                MATCH_IMPORTANCE: 'tt_pro_match_importance',
+                SET_FORMAT: 'tt_pro_set_format',
+                TIMEOUTS: 'tt_pro_timeouts',
+                H2H: 'tt_pro_h2h',
+                SURFACE: 'tt_pro_surface',
+                
+                ODDS_P1: 'tt_pro_odds_p1',
+                ODDS_P2: 'tt_pro_odds_p2',
+                ODDS_TOTAL_SETS_OVER: 'tt_pro_odds_total_sets_over',
+                ODDS_TOTAL_SETS_UNDER: 'tt_pro_odds_total_sets_under',
+                ODDS_TOTAL_GAMES_OVER: 'tt_pro_odds_total_games_over',
+                ODDS_TOTAL_GAMES_UNDER: 'tt_pro_odds_total_games_under',
+                
+                ACTIVE_TAB: 'tt_pro_active_tab',
+                TIMER_HOURS: 'tt_pro_timer_hours',
+                TIMER_MINUTES: 'tt_pro_timer_minutes'
+            };
+            
+            // Сохранение всех данных
+            function saveAllData() {
+                try {
+                    // Игроки
+                    localStorage.setItem(DATA_KEYS.PLAYER1_NAME, document.getElementById('player1_name').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER1_RATING, document.getElementById('player1_rating').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER1_FORM, document.getElementById('player1_form').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER1_WINRATE, document.getElementById('player1_winrate').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER1_SPEED, document.getElementById('player1_speed').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER1_STRENGTHS, document.getElementById('player1_strengths').value);
+                    
+                    localStorage.setItem(DATA_KEYS.PLAYER2_NAME, document.getElementById('player2_name').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER2_RATING, document.getElementById('player2_rating').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER2_FORM, document.getElementById('player2_form').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER2_WINRATE, document.getElementById('player2_winrate').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER2_SPEED, document.getElementById('player2_speed').value);
+                    localStorage.setItem(DATA_KEYS.PLAYER2_STRENGTHS, document.getElementById('player2_strengths').value);
+                    
+                    // Матч
+                    localStorage.setItem(DATA_KEYS.TOURNAMENT, document.getElementById('tournament').value);
+                    localStorage.setItem(DATA_KEYS.MATCH_IMPORTANCE, document.getElementById('match_importance').value);
+                    localStorage.setItem(DATA_KEYS.SET_FORMAT, document.getElementById('set_format').value);
+                    localStorage.setItem(DATA_KEYS.TIMEOUTS, document.getElementById('timeouts').value);
+                    localStorage.setItem(DATA_KEYS.H2H, document.getElementById('h2h').value);
+                    localStorage.setItem(DATA_KEYS.SURFACE, document.getElementById('surface').value);
+                    
+                    // Коэффициенты
+                    localStorage.setItem(DATA_KEYS.ODDS_P1, document.getElementById('odds_p1').value);
+                    localStorage.setItem(DATA_KEYS.ODDS_P2, document.getElementById('odds_p2').value);
+                    localStorage.setItem(DATA_KEYS.ODDS_TOTAL_SETS_OVER, document.getElementById('odds_total_sets_over').value);
+                    localStorage.setItem(DATA_KEYS.ODDS_TOTAL_SETS_UNDER, document.getElementById('odds_total_sets_under').value);
+                    localStorage.setItem(DATA_KEYS.ODDS_TOTAL_GAMES_OVER, document.getElementById('odds_total_games_over').value);
+                    localStorage.setItem(DATA_KEYS.ODDS_TOTAL_GAMES_UNDER, document.getElementById('odds_total_games_under').value);
+                    
+                    // Таймер
+                    localStorage.setItem(DATA_KEYS.TIMER_HOURS, document.getElementById('hours').value);
+                    localStorage.setItem(DATA_KEYS.TIMER_MINUTES, document.getElementById('minutes').value);
+                    
+                    return true;
+                } catch (e) {
+                    console.error('Ошибка сохранения данных:', e);
+                    return false;
+                }
+            }
+            
+            // Загрузка всех данных
+            function loadAllData() {
+                try {
+                    // Игроки
+                    document.getElementById('player1_name').value = localStorage.getItem(DATA_KEYS.PLAYER1_NAME) || 'Ма Лонг';
+                    document.getElementById('player1_rating').value = localStorage.getItem(DATA_KEYS.PLAYER1_RATING) || '2850';
+                    document.getElementById('player1_form').value = localStorage.getItem(DATA_KEYS.PLAYER1_FORM) || '4-1';
+                    document.getElementById('player1_winrate').value = localStorage.getItem(DATA_KEYS.PLAYER1_WINRATE) || '78';
+                    document.getElementById('player1_speed').value = localStorage.getItem(DATA_KEYS.PLAYER1_SPEED) || 'medium';
+                    document.getElementById('player1_strengths').value = localStorage.getItem(DATA_KEYS.PLAYER1_STRENGTHS) || 'Крученые подачи, атака слева, стабильность в защите';
+                    
+                    document.getElementById('player2_name').value = localStorage.getItem(DATA_KEYS.PLAYER2_NAME) || 'Фань Чжэньдун';
+                    document.getElementById('player2_rating').value = localStorage.getItem(DATA_KEYS.PLAYER2_RATING) || '2820';
+                    document.getElementById('player2_form').value = localStorage.getItem(DATA_KEYS.PLAYER2_FORM) || '3-2';
+                    document.getElementById('player2_winrate').value = localStorage.getItem(DATA_KEYS.PLAYER2_WINRATE) || '72';
+                    document.getElementById('player2_speed').value = localStorage.getItem(DATA_KEYS.PLAYER2_SPEED) || 'fast';
+                    document.getElementById('player2_strengths').value = localStorage.getItem(DATA_KEYS.PLAYER2_STRENGTHS) || 'Агрессивная игра, сильные подачи, быстрое завершение атак';
+                    
+                    // Матч
+                    document.getElementById('tournament').value = localStorage.getItem(DATA_KEYS.TOURNAMENT) || 'liga_pro';
+                    document.getElementById('match_importance').value = localStorage.getItem(DATA_KEYS.MATCH_IMPORTANCE) || 'medium';
+                    document.getElementById('set_format').value = localStorage.getItem(DATA_KEYS.SET_FORMAT) || 'bo7';
+                    document.getElementById('timeouts').value = localStorage.getItem(DATA_KEYS.TIMEOUTS) || '1';
+                    document.getElementById('h2h').value = localStorage.getItem(DATA_KEYS.H2H) || '8-5';
+                    document.getElementById('surface').value = localStorage.getItem(DATA_KEYS.SURFACE) || 'wood';
+                    
+                    // Коэффициенты
+                    document.getElementById('odds_p1').value = localStorage.getItem(DATA_KEYS.ODDS_P1) || '1.85';
+                    document.getElementById('odds_p2').value = localStorage.getItem(DATA_KEYS.ODDS_P2) || '2.05';
+                    document.getElementById('odds_total_sets_over').value = localStorage.getItem(DATA_KEYS.ODDS_TOTAL_SETS_OVER) || '1.95';
+                    document.getElementById('odds_total_sets_under').value = localStorage.getItem(DATA_KEYS.ODDS_TOTAL_SETS_UNDER) || '1.85';
+                    document.getElementById('odds_total_games_over').value = localStorage.getItem(DATA_KEYS.ODDS_TOTAL_GAMES_OVER) || '1.90';
+                    document.getElementById('odds_total_games_under').value = localStorage.getItem(DATA_KEYS.ODDS_TOTAL_GAMES_UNDER) || '1.90';
+                    
+                    // Таймер
+                    document.getElementById('hours').value = localStorage.getItem(DATA_KEYS.TIMER_HOURS) || '2';
+                    document.getElementById('minutes').value = localStorage.getItem(DATA_KEYS.TIMER_MINUTES) || '30';
+                    
+                    // Восстанавливаем активную вкладку
+                    const savedActiveTab = localStorage.getItem(DATA_KEYS.ACTIVE_TAB);
+                    if (savedActiveTab) {
+                        tabs.forEach(tab => tab.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                        
+                        const tabToActivate = document.querySelector(`.tab[data-tab="${savedActiveTab}"]`);
+                        const contentToActivate = document.getElementById(savedActiveTab);
+                        
+                        if (tabToActivate && contentToActivate) {
+                            tabToActivate.classList.add('active');
+                            contentToActivate.classList.add('active');
+                        }
+                    }
+                    
+                    return true;
+                } catch (e) {
+                    console.error('Ошибка загрузки данных:', e);
+                    return false;
+                }
+            }
+            
+            // Инициализация вкладок
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabId = this.dataset.tab;
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    localStorage.setItem(DATA_KEYS.ACTIVE_TAB, tabId);
+                    
+                    if (tabId === 'history') {
+                        updateHistoryDisplay();
+                    }
+                    
+                    // Прокрутка вверх при переключении вкладок
+                    window.scrollTo(0, 0);
+                    
+                    // Вибрация для мобильных устройств
+                    if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                    }
+                });
+            });
+            
+            // Управление темами
+            themeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const theme = this.dataset.theme;
+                    
+                    themeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    applyTheme(theme);
+                    localStorage.setItem('tt_pro_theme', theme);
+                    showNotification(`Тема "${getThemeName(theme)}" применена`);
+                });
+            });
+            
+            function getThemeName(theme) {
+                const names = {
+                    'default': 'Стандартная',
+                    'dark': 'Темная',
+                    'orange': 'Оранжевая'
+                };
+                return names[theme] || theme;
+            }
+            
+            // Функция применения темы
+            function applyTheme(theme) {
+                const themes = {
+                    'default': {
+                        '--primary': '#1a237e',
+                        '--secondary': '#d32f2f',
+                        '--accent': '#2196f3',
+                        '--accent2': '#ff5722',
+                        '--profit': '#4caf50',
+                        '--loss': '#f44336',
+                        '--warning': '#ff9800',
+                        '--bg-main': '#0d1b2a',
+                        '--bg-card': '#1b263b',
+                        '--bg-input': '#2c3e50',
+                        '--text-main': '#e0e0e0',
+                        '--text-secondary': '#90a4ae',
+                        '--border': '#37474f'
+                    },
+                    'dark': {
+                        '--primary': '#121212',
+                        '--secondary': '#b71c1c',
+                        '--accent': '#1976d2',
+                        '--accent2': '#e64a19',
+                        '--profit': '#2e7d32',
+                        '--loss': '#c62828',
+                        '--warning': '#ff9800',
+                        '--bg-main': '#000000',
+                        '--bg-card': '#1a1a1a',
+                        '--bg-input': '#2d2d2d',
+                        '--text-main': '#ffffff',
+                        '--text-secondary': '#aaaaaa',
+                        '--border': '#333333'
+                    },
+                    'orange': {
+                        '--primary': '#e65100',
+                        '--secondary': '#b71c1c',
+                        '--accent': '#ff9800',
+                        '--accent2': '#2196f3',
+                        '--profit': '#43a047',
+                        '--loss': '#c62828',
+                        '--warning': '#ff9800',
+                        '--bg-main': '#1a1a1a',
+                        '--bg-card': '#2d1f0d',
+                        '--bg-input': '#3e2c1a',
+                        '--text-main': '#ffecb3',
+                        '--text-secondary': '#ffcc80',
+                        '--border': '#5d4037'
+                    }
+                };
+                
+                const themeColors = themes[theme] || themes['default'];
+                for (const [property, value] of Object.entries(themeColors)) {
+                    document.documentElement.style.setProperty(property, value);
+                }
+            }
+            
+            // Загрузка сохраненной темы
+            applyTheme(currentTheme);
+            themeBtns.forEach(btn => {
+                if (btn.dataset.theme === currentTheme) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Навигация
+            savePlayersBtn.addEventListener('click', function() {
+                if (saveAllData()) {
+                    showNotification('✅ Данные игроков сохранены');
+                } else {
+                    showNotification('❌ Ошибка сохранения данных');
+                }
+            });
+            
+            nextToMatchBtn.addEventListener('click', function() {
+                saveAllData();
+                document.querySelector('.tab[data-tab="match"]').click();
+            });
+            
+            backToPlayersBtn.addEventListener('click', function() {
+                document.querySelector('.tab[data-tab="players"]').click();
+            });
+            
+            backToMatchBtn.addEventListener('click', function() {
+                document.querySelector('.tab[data-tab="match"]').click();
+            });
+            
+            backToAnalysisBtn.addEventListener('click', function() {
+                document.querySelector('.tab[data-tab="analysis"]').click();
+            });
+            
+            backToBetsFromHistoryBtn.addEventListener('click', function() {
+                document.querySelector('.tab[data-tab="bets"]').click();
+            });
+            
+            // Анализ матча
+            analyzeMatchBtn.addEventListener('click', function() {
+                // Показать индикатор загрузки
+                analyzeMatchBtn.innerHTML = '<span>⏳</span> АНАЛИЗ...';
+                analyzeMatchBtn.disabled = true;
+                
+                setTimeout(() => {
+                    try {
+                        // Получаем данные игроков
+                        const p1Rating = parseFloat(document.getElementById('player1_rating').value) || 2850;
+                        const p2Rating = parseFloat(document.getElementById('player2_rating').value) || 2820;
+                        
+                        const p1Form = document.getElementById('player1_form').value;
+                        const p2Form = document.getElementById('player2_form').value;
+                        
+                        const p1Winrate = parseFloat(document.getElementById('player1_winrate').value) || 78;
+                        const p2Winrate = parseFloat(document.getElementById('player2_winrate').value) || 72;
+                        
+                        const p1Speed = document.getElementById('player1_speed').value;
+                        const p2Speed = document.getElementById('player2_speed').value;
+                        
+                        const h2h = document.getElementById('h2h').value;
+                        const tournament = document.getElementById('tournament').value;
+                        const importance = document.getElementById('match_importance').value;
+                        const surface = document.getElementById('surface').value;
+                        
+                        // РАСЧЕТ 1: Базовое преимущество по рейтингу (Elo формула)
+                        const ratingDiff = p1Rating - p2Rating;
+                        const baseWinProbP1 = 1 / (1 + Math.pow(10, -ratingDiff / 400));
+                        
+                        // РАСЧЕТ 2: Корректировка по форме
+                        const p1FormScore = calculateFormScore(p1Form);
+                        const p2FormScore = calculateFormScore(p2Form);
+                        const formDiff = p1FormScore - p2FormScore;
+                        const formAdjustment = formDiff * 0.05; // 5% за каждую победу разницы
+                        
+                        // РАСЧЕТ 3: Корректировка по личным встречам
+                        const h2hAdjustment = calculateH2HAdjustment(h2h);
+                        
+                        // РАСЧЕТ 4: Корректировка по покрытию
+                        const surfaceAdjustment = calculateSurfaceAdjustment(surface, p1Speed, p2Speed);
+                        
+                        // РАСЧЕТ 5: Корректировка по важности матча
+                        const importanceAdjustment = calculateImportanceAdjustment(importance, p1Winrate, p2Winrate);
+                        
+                        // РАСЧЕТ 6: Итоговая вероятность
+                        let finalProbP1 = baseWinProbP1 + formAdjustment + h2hAdjustment + surfaceAdjustment + importanceAdjustment;
+                        finalProbP1 = Math.max(0.25, Math.min(0.85, finalProbP1)); // Ограничение 25%-85%
+                        const finalProbP2 = 1 - finalProbP1;
+                        
+                        // РАСЧЕТ 7: Ожидаемое количество сетов
+                        const expectedSets = calculateExpectedSets(finalProbP1, finalProbP2);
+                        
+                        // РАСЧЕТ 8: Ожидаемое количество игр
+                        const expectedGames = calculateExpectedGames(finalProbP1, finalProbP2, p1Speed, p2Speed);
+                        
+                        // РАСЧЕТ 9: Длительность матча
+                        const matchDuration = Math.round(expectedGames * 1.2 + expectedSets * 2); // Примерная формула
+                        
+                        // РАСЧЕТ 10: Преимущество Value Betting
+                        const oddsP1 = parseFloat(document.getElementById('odds_p1').value) || 1.85;
+                        const oddsP2 = parseFloat(document.getElementById('odds_p2').value) || 2.05;
+                        
+                        const marketProbP1 = 1 / oddsP1;
+                        const marketProbP2 = 1 / oddsP2;
+                        const bookmakerMargin = marketProbP1 + marketProbP2 - 1;
+                        const realMarketProbP1 = marketProbP1 / (1 + bookmakerMargin);
+                        
+                        const edgeP1 = (finalProbP1 * oddsP1) - 1;
+                        const edgeP2 = (finalProbP2 * oddsP2) - 1;
+                        
+                        // Обновляем результаты
+                        document.getElementById('prob_p1').textContent = (finalProbP1 * 100).toFixed(0) + '%';
+                        document.getElementById('prob_p2').textContent = (finalProbP2 * 100).toFixed(0) + '%';
+                        
+                        document.getElementById('progress_p1').style.width = (finalProbP1 * 100) + '%';
+                        document.getElementById('progress_p2').style.width = (finalProbP2 * 100) + '%';
+                        
+                        document.getElementById('expected_sets').textContent = expectedSets.toFixed(1);
+                        document.getElementById('expected_games').textContent = expectedGames.toFixed(1);
+                        document.getElementById('match_duration').textContent = matchDuration;
+                        
+                        // Обновляем детальный анализ
+                        document.getElementById('rating_edge').textContent = (baseWinProbP1 * 100 - 50).toFixed(1) + '%';
+                        document.getElementById('form_edge').textContent = (formAdjustment * 100).toFixed(1) + '%';
+                        document.getElementById('h2h_edge').textContent = (h2hAdjustment * 100).toFixed(1) + '%';
+                        document.getElementById('psycho_edge').textContent = (importanceAdjustment * 100).toFixed(1) + '%';
+                        
+                        // Определяем лучшую ставку
+                        let bestBetType = '';
+                        let bestBetSelection = '';
+                        let bestBetOdds = 0;
+                        let bestBetEdge = 0;
+                        
+                        if (edgeP1 > edgeP2 && edgeP1 > 0.02) {
+                            bestBetType = 'Победитель';
+                            bestBetSelection = document.getElementById('player1_name').value + ' (П1)';
+                            bestBetOdds = oddsP1;
+                            bestBetEdge = edgeP1;
+                        } else if (edgeP2 > 0.02) {
+                            bestBetType = 'Победитель';
+                            bestBetSelection = document.getElementById('player2_name').value + ' (П2)';
+                            bestBetOdds = oddsP2;
+                            bestBetEdge = edgeP2;
+                        }
+                        
+                        // Проверяем тоталы
+                        const oddsTotalSetsOver = parseFloat(document.getElementById('odds_total_sets_over').value) || 1.95;
+                        const oddsTotalSetsUnder = parseFloat(document.getElementById('odds_total_sets_under').value) || 1.85;
+                        
+                        const probSetsOver = expectedSets > 3.5 ? 0.65 : 0.35;
+                        const edgeSetsOver = (probSetsOver * oddsTotalSetsOver) - 1;
+                        const edgeSetsUnder = ((1 - probSetsOver) * oddsTotalSetsUnder) - 1;
+                        
+                        if (edgeSetsOver > bestBetEdge && edgeSetsOver > 0.02) {
+                            bestBetType = 'Тотал сетов';
+                            bestBetSelection = 'Больше 3.5';
+                            bestBetOdds = oddsTotalSetsOver;
+                            bestBetEdge = edgeSetsOver;
+                        } else if (edgeSetsUnder > bestBetEdge && edgeSetsUnder > 0.02) {
+                            bestBetType = 'Тотал сетов';
+                            bestBetSelection = 'Меньше 3.5';
+                            bestBetOdds = oddsTotalSetsUnder;
+                            bestBetEdge = edgeSetsUnder;
+                        }
+                        
+                        // Обновляем главную рекомендацию
+                        if (bestBetType) {
+                            document.getElementById('main_bet_type').textContent = bestBetType;
+                            document.getElementById('main_bet_selection').textContent = bestBetSelection;
+                            document.getElementById('main_bet_odds').textContent = bestBetOdds.toFixed(2);
+                            document.getElementById('main_bet_edge').textContent = '+' + (bestBetEdge * 100).toFixed(1) + '%';
+                            
+                            const confidenceScore = Math.min(Math.round(bestBetEdge * 500 + 70), 95);
+                            document.querySelector('.bet-confidence').textContent = confidenceScore + '%';
+                        }
+                        
+                        document.querySelector('.tab[data-tab="analysis"]').click();
+                        showNotification('✅ Анализ завершен! ' + (bestBetType ? 'Найдены выгодные ставки.' : 'Выгодных ставок не найдено.'));
+                        
+                    } catch (error) {
+                        console.error('Ошибка анализа:', error);
+                        showNotification('❌ Ошибка при анализе данных');
+                    } finally {
+                        // Восстанавливаем кнопку
+                        analyzeMatchBtn.innerHTML = '<span>🧮</span> ПРОАНАЛИЗИРОВАТЬ';
+                        analyzeMatchBtn.disabled = false;
+                    }
+                }, 500); // Искусственная задержка для UX
+            });
+            
+            // Вспомогательные функции расчета
+            function calculateFormScore(form) {
+                // Формат: "4-1" или "WWLWW"
+                if (form.includes('-')) {
+                    const parts = form.split('-');
+                    const wins = parseFloat(parts[0]) || 0;
+                    const losses = parseFloat(parts[1]) || 0;
+                    return (wins - losses) / 5; // Нормализация к -1..1
+                } else {
+                    let wins = 0;
+                    for (let i = 0; i < form.length; i++) {
+                        if (form[i].toUpperCase() === 'W') wins++;
+                    }
+                    return (wins - (form.length - wins)) / form.length;
+                }
+            }
+            
+            function calculateH2HAdjustment(h2h) {
+                // Формат: "8-5"
+                const parts = h2h.split('-');
+                const p1Wins = parseFloat(parts[0]) || 0;
+                const p2Wins = parseFloat(parts[1]) || 0;
+                const total = p1Wins + p2Wins;
+                
+                if (total === 0) return 0;
+                
+                const winRate = p1Wins / total;
+                return (winRate - 0.5) * 0.2; // 20% максимальная корректировка
+            }
+            
+            function calculateSurfaceAdjustment(surface, p1Speed, p2Speed) {
+                // Деревянный стол: преимущество быстрым игрокам
+                // Синтетика: преимущество медленным, стабильным
+                if (surface === 'wood') {
+                    if (p1Speed === 'fast' && p2Speed !== 'fast') return 0.03;
+                    if (p1Speed !== 'fast' && p2Speed === 'fast') return -0.03;
+                } else if (surface === 'synthetic') {
+                    if (p1Speed === 'slow' && p2Speed !== 'slow') return 0.02;
+                    if (p1Speed !== 'slow' && p2Speed === 'slow') return -0.02;
+                }
+                return 0;
+            }
+            
+            function calculateImportanceAdjustment(importance, p1Winrate, p2Winrate) {
+                // Важные матчи: преимущество опытным игрокам с высоким % побед
+                if (importance === 'high') {
+                    const winrateDiff = (p1Winrate - p2Winrate) / 100;
+                    return winrateDiff * 0.1; // 10% от разницы в % побед
+                }
+                return 0;
+            }
+            
+            function calculateExpectedSets(probP1, probP2) {
+                // Вероятность быстрой победы (3:0 или 4:0)
+                const quickWinProb = Math.pow(probP1, 3) + Math.pow(probP2, 3);
+                
+                // Вероятность победы в 4 сетах
+                const winIn4Prob = 3 * Math.pow(probP1, 3) * probP2 + 3 * Math.pow(probP2, 3) * probP1;
+                
+                // Вероятность победы в 5 сетах (для БО5)
+                const winIn5Prob = 6 * Math.pow(probP1, 3) * Math.pow(probP2, 2) + 6 * Math.pow(probP2, 3) * Math.pow(probP1, 2);
+                
+                // Ожидаемое количество сетов
+                return 3 * quickWinProb + 4 * winIn4Prob + 5 * winIn5Prob;
+            }
+            
+            function calculateExpectedGames(probP1, probP2, p1Speed, p2Speed) {
+                // Базовое ожидание: 11 очков за сет при равных силах
+                const baseGamesPerSet = 11;
+                
+                // Корректировка на разницу в силах
+                const probDiff = Math.abs(probP1 - probP2);
+                const strengthAdjustment = 1 - (probDiff * 0.3); // На 30% меньше игр при большой разнице
+                
+                // Корректировка на стиль игры
+                let styleAdjustment = 1;
+                if (p1Speed === 'slow' || p2Speed === 'slow') {
+                    styleAdjustment = 1.15; // На 15% больше игр при медленной игре
+                } else if (p1Speed === 'fast' && p2Speed === 'fast') {
+                    styleAdjustment = 0.9; // На 10% меньше игр при быстрой игре
+                }
+                
+                const expectedSets = calculateExpectedSets(probP1, probP2);
+                return baseGamesPerSet * expectedSets * strengthAdjustment * styleAdjustment;
+            }
+            
+            // Таймер
+            startTimerBtn.addEventListener('click', function() {
+                const hours = parseInt(document.getElementById('hours').value) || 0;
+                const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                
+                if (hours === 0 && minutes === 0) {
+                    showNotification('❌ Установите время до матча');
+                    return;
+                }
+                
+                // Сохраняем время
+                localStorage.setItem(DATA_KEYS.TIMER_HOURS, hours);
+                localStorage.setItem(DATA_KEYS.TIMER_MINUTES, minutes);
+                
+                // Запускаем таймер
+                matchTimer = hours * 3600 + minutes * 60;
+                
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                startTimerBtn.innerHTML = '<span>⏸️</span> ПАУЗА ТАЙМЕРА';
+                startTimerBtn.onclick = function() {
+                    clearInterval(timerInterval);
+                    startTimerBtn.innerHTML = '<span>⏱️</span> ПРОДОЛЖИТЬ';
+                    startTimerBtn.onclick = function() {
+                        timerInterval = setInterval(updateTimer, 1000);
+                        startTimerBtn.innerHTML = '<span>⏸️</span> ПАУЗА ТАЙМЕРА';
+                        startTimerBtn.onclick = function() {
+                            clearInterval(timerInterval);
+                            startTimerBtn.innerHTML = '<span>⏱️</span> ПРОДОЛЖИТЬ';
+                            startTimerBtn.onclick = arguments.callee;
+                        };
+                    };
+                };
+                
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                showNotification('⏱️ Таймер запущен');
+                
+                function updateTimer() {
+                    if (matchTimer <= 0) {
+                        clearInterval(timerInterval);
+                        document.getElementById('match_timer').textContent = 'МАТЧ НАЧАЛСЯ!';
+                        document.getElementById('match_timer').style.color = 'var(--profit)';
+                        showNotification('⏰ Матч начался! Сделайте ставку в первые 2-3 игры.');
+                        startTimerBtn.innerHTML = '<span>⏱️</span> ЗАПУСТИТЬ ТАЙМЕР';
+                        startTimerBtn.onclick = startTimerBtn.onclick;
+                        return;
+                    }
+                    
+                    matchTimer--;
+                    
+                    const h = Math.floor(matchTimer / 3600);
+                    const m = Math.floor((matchTimer % 3600) / 60);
+                    const s = matchTimer % 60;
+                    
+                    document.getElementById('match_timer').textContent = 
+                        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    
+                    // Изменение цвета при приближении к концу
+                    if (matchTimer < 300) { // Меньше 5 минут
+                        document.getElementById('match_timer').style.color = 'var(--warning)';
+                    }
+                    if (matchTimer < 60) { // Меньше 1 минуты
+                        document.getElementById('match_timer').style.color = 'var(--loss)';
+                    }
+                }
+            });
+            
+            // Сохранение рекомендации
+            saveRecommendationBtn.addEventListener('click', function() {
+                const betType = document.getElementById('main_bet_type').textContent;
+                const selection = document.getElementById('main_bet_selection').textContent;
+                const odds = parseFloat(document.getElementById('main_bet_odds').textContent);
+                const edge = document.getElementById('main_bet_edge').textContent;
+                const confidence = document.querySelector('.bet-confidence').textContent;
+                
+                if (!betType || betType === '') {
+                    showNotification('❌ Нет рекомендаций для сохранения');
+                    return;
+                }
+                
+                const bet = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString('ru-RU'),
+                    player1: document.getElementById('player1_name').value,
+                    player2: document.getElementById('player2_name').value,
+                    type: betType,
+                    selection: selection,
+                    odds: odds,
+                    edge: edge,
+                    confidence: confidence,
+                    stake: calculateOptimalStake(odds, parseFloat(edge)),
+                    status: 'pending',
+                    result: null
+                };
+                
+                betHistory.unshift(bet);
+                localStorage.setItem('tt_pro_bets', JSON.stringify(betHistory));
+                updateHistoryDisplay();
+                
+                showNotification('✅ Рекомендация сохранена в историю');
+                document.querySelector('.tab[data-tab="history"]').click();
+            });
+            
+            // Расчет оптимального размера ставки
+            function calculateOptimalStake(odds, edgePercent) {
+                const edge = edgePercent / 100;
+                const kellyFraction = (edge / (odds - 1)) * 0.5; // Половина Келли для безопасности
+                const stakePercent = Math.min(Math.max(kellyFraction * 100, 1), 3);
+                const stakeAmount = (bankroll * stakePercent / 100).toFixed(0);
+                
+                return parseInt(stakeAmount);
+            }
+            
+            // Очистка истории
+            clearHistoryBtn.addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите очистить всю историю ставок?')) {
+                    betHistory = [];
+                    localStorage.setItem('tt_pro_bets', JSON.stringify(betHistory));
+                    updateHistoryDisplay();
+                    showNotification('✅ История очищена');
+                }
+            });
+            
+            // Обновление отображения истории
+            function updateHistoryDisplay() {
+                const historyList = document.getElementById('history_list');
+                const emptyHistory = document.getElementById('empty_history');
+                
+                if (betHistory.length === 0) {
+                    emptyHistory.style.display = 'block';
+                    if (historyList) historyList.innerHTML = '';
+                } else {
+                    emptyHistory.style.display = 'none';
+                    
+                    let html = '';
+                    betHistory.forEach((bet, index) => {
+                        const statusClass = bet.status;
+                        const statusText = bet.status === 'pending' ? 'Ожидание' : 
+                                          bet.status === 'win' ? 'Выигрыш' : 'Проигрыш';
+                        const statusColor = bet.status === 'pending' ? 'var(--warning)' : 
+                                           bet.status === 'win' ? 'var(--profit)' : 'var(--loss)';
+                        
+                        html += `
+                            <div class="history-item ${statusClass}">
+                                <div class="history-header">
+                                    <div class="history-players">${bet.player1} vs ${bet.player2}</div>
+                                    <div class="history-date">${bet.date}</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 700; margin-bottom: 4px;">
+                                            ${bet.type}: ${bet.selection} @ ${bet.odds.toFixed(2)}
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                            Преимущество: ${bet.edge} | Уверенность: ${bet.confidence}
+                                        </div>
+                                    </div>
+                                    <div class="history-status" style="background: ${statusColor}20; color: ${statusColor}">
+                                        ${statusText}
+                                    </div>
+                                </div>
+                                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                                    Ставка: ${bet.stake} ₽
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px; flex: 1;" 
+                                            onclick="markBetResult(${index}, 'win')">
+                                        ✅ Выиграла
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px; flex: 1;" 
+                                            onclick="markBetResult(${index}, 'loss')">
+                                        ❌ Проиграла
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    if (historyList) historyList.innerHTML = html;
+                }
+                
+                updateStatistics();
+            }
+            
+            // Обновление статистики
+            function updateStatistics() {
+                const totalBets = betHistory.length;
+                const wonBets = betHistory.filter(b => b.status === 'win').length;
+                const lostBets = betHistory.filter(b => b.status === 'loss').length;
+                const pendingBets = betHistory.filter(b => b.status === 'pending').length;
+                
+                const winRate = totalBets - pendingBets > 0 ? 
+                    Math.round((wonBets / (totalBets - pendingBets)) * 100) : 0;
+                
+                let totalProfit = 0;
+                let betsWinner = 0;
+                let betsTotalSets = 0;
+                let betsTotalGames = 0;
+                let totalOdds = 0;
+                let oddsCount = 0;
+                
+                betHistory.forEach(bet => {
+                    if (bet.type.includes('Победитель')) betsWinner++;
+                    if (bet.type.includes('сетов')) betsTotalSets++;
+                    if (bet.type.includes('игр')) betsTotalGames++;
+                    
+                    if (bet.status === 'win') {
+                        totalProfit += bet.stake * (bet.odds - 1);
+                        totalOdds += bet.odds;
+                        oddsCount++;
+                    } else if (bet.status === 'loss') {
+                        totalProfit -= bet.stake;
+                    }
+                });
+                
+                const avgOdds = oddsCount > 0 ? 
+                    (totalOdds / oddsCount).toFixed(2) : '0.00';
+                
+                document.getElementById('total_bets').textContent = totalBets;
+                document.getElementById('win_rate').textContent = winRate + '%';
+                document.getElementById('total_profit').textContent = 
+                    (totalProfit > 0 ? '+' : '') + totalProfit.toFixed(0) + ' ₽';
+                
+                document.getElementById('bets_winner').textContent = betsWinner;
+                document.getElementById('bets_total_sets').textContent = betsTotalSets;
+                document.getElementById('bets_total_games').textContent = betsTotalGames;
+                document.getElementById('avg_odds').textContent = avgOdds;
+                
+                // Цвета для показателей
+                const profitElement = document.getElementById('total_profit');
+                profitElement.style.color = totalProfit >= 0 ? 'var(--profit)' : 'var(--loss)';
+                
+                const winRateElement = document.getElementById('win_rate');
+                if (winRate >= 60) {
+                    winRateElement.style.color = 'var(--profit)';
+                } else if (winRate >= 40) {
+                    winRateElement.style.color = 'var(--warning)';
+                } else {
+                    winRateElement.style.color = 'var(--loss)';
+                }
+            }
+            
+            // Глобальные функции для работы с историей
+            window.markBetResult = function(index, result) {
+                if (index >= 0 && index < betHistory.length) {
+                    betHistory[index].status = result;
+                    localStorage.setItem('tt_pro_bets', JSON.stringify(betHistory));
+                    updateHistoryDisplay();
+                    
+                    const message = result === 'win' ? '✅ Поздравляем с выигрышем!' : '❌ Ставка зарегистрирована как проигрышная';
+                    showNotification(message);
+                }
+            };
+            
+            // Уведомления
+            function showNotification(message) {
+                // Проверяем, поддерживает ли браузер уведомления
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("TT PRO Анализатор", {
+                        body: message,
+                        icon: "icons/icon226.png"
+                    });
+                }
+                
+                // Создаем плавающее уведомление в интерфейсе
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 16px;
+                    left: 16px;
+                    background: var(--bg-card);
+                    color: var(--text-main);
+                    padding: 16px;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    font-weight: 600;
+                    font-size: 14px;
+                    border-left: 4px solid var(--accent);
+                    transform: translateY(-20px);
+                    opacity: 0;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    max-width: 100%;
+                    border: 1px solid var(--border);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                `;
+                
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                // Анимация появления
+                setTimeout(() => {
+                    notification.style.transform = 'translateY(0)';
+                    notification.style.opacity = '1';
+                }, 10);
+                
+                // Автоматическое скрытие через 3 секунды
+                setTimeout(() => {
+                    notification.style.transform = 'translateY(-20px)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+            
+            // Валидация ввода чисел
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (input.id.includes('rating') || input.id.includes('winrate') || 
+                    input.id.includes('odds') || input.id === 'h2h') {
+                    
+                    input.addEventListener('input', function() {
+                        let value = this.value.replace(/[^\d.,-]/g, '');
+                        
+                        // Для коэффициентов и рейтингов
+                        if (this.id.includes('odds') || this.id.includes('rating')) {
+                            value = value.replace(/,/g, '.');
+                            const parts = value.split('.');
+                            if (parts.length > 2) {
+                                value = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            
+                            if (value.includes('.')) {
+                                const decimalParts = value.split('.');
+                                if (decimalParts[1].length > 2) {
+                                    value = decimalParts[0] + '.' + decimalParts[1].substring(0, 2);
+                                }
+                            }
+                        }
+                        
+                        this.value = value;
+                        saveAllData();
+                    });
+                }
+            });
+            
+            // Автосохранение при изменении select и textarea
+            document.querySelectorAll('select, textarea').forEach(element => {
+                element.addEventListener('change', function() {
+                    saveAllData();
+                });
+            });
+            
+            // Обработка нажатия Enter в полях ввода
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur(); // Убираем фокус с поля
+                        saveAllData();
+                    }
+                });
+            });
+            
+            // Предотвращение прокрутки страницы при скролле внутри элементов
+            document.querySelectorAll('.history-list, .content').forEach(el => {
+                el.addEventListener('touchmove', function(e) {
+                    if (this.scrollHeight > this.clientHeight) {
+                        e.stopPropagation();
+                    }
+                }, { passive: false });
+            });
+            
+            // Инициализация
+            loadAllData();
+            updateHistoryDisplay();
+            
+            // Установка оптимального времени для ставки
+            document.getElementById('best_bet_timer').textContent = '10-15 мин';
+            
+            // Приветственное сообщение
+            setTimeout(() => {
+                showNotification('🏓 TT PRO готов к анализу! Данные сохраняются автоматически.');
+            }, 1000);
+            
+            // Автосохранение всех данных
+            setInterval(() => {
+                saveAllData();
+                if (betHistory.length > 0) {
+                    localStorage.setItem('tt_pro_bets', JSON.stringify(betHistory));
+                }
+            }, 30000); // Каждые 30 секунд
+            
+            // Обработка изменения ориентации экрана
+            let isPortrait = window.matchMedia("(orientation: portrait)").matches;
+            window.addEventListener("orientationchange", function() {
+                setTimeout(() => {
+                    isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                    // Принудительная перерисовка для iOS
+                    document.body.style.transform = 'scale(0.99)';
+                    setTimeout(() => {
+                        document.body.style.transform = '';
+                    }, 10);
+                }, 300);
+            });
+            
+            // Предотвращение масштабирования при двойном тапе на iOS
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // Добавляем класс для iOS
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+                document.body.classList.add('ios-device');
+            }
+        });
+    </script>
+</body>
+</html>
